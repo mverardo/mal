@@ -1,5 +1,3 @@
-use std::io::Write;
-
 fn read(s: String) -> String {
     s
 }
@@ -16,19 +14,26 @@ fn rep(s: String) -> String {
     print(eval(read(s)))
 }
 
-fn main() {
+use rustyline::{error::ReadlineError, Editor, Result};
+
+fn main() -> Result<()> {
+    let mut rl = Editor::<()>::new()?;
     loop {
-        let mut input = String::new();
-        print!("user> ");
-        std::io::stdout().flush().unwrap();
+        let readline = rl.readline("user> ");
 
-        let bytes_read = std::io::stdin().read_line(&mut input);
-
-        if matches!(bytes_read, Ok(0)) {
-            break;
-        };
-
-        let rep_result = rep(input);
-        print!("{}", rep_result);
+        match readline {
+            Ok(line) => {
+                rl.add_history_entry(line.as_str());
+                println!("{}", rep(line));
+            }
+            Err(ReadlineError::Eof) => break,
+            Err(ReadlineError::Interrupted) => break,
+            Err(e) => {
+                println!("{}", e);
+                break;
+            }
+        }
     }
+
+    Ok(())
 }
